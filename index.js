@@ -1,9 +1,35 @@
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
 
 app.use(express.json())
 
- let persons = [
+morgan.token(
+    'postType',
+    function(req, res) { 
+        if(req.method === 'POST'){
+            return JSON.stringify(req.body)
+        }
+    }
+)
+
+const morganConfig = morgan(function (tokens, req, res) {
+    return [
+      'MESSAGE:',
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), 
+      '-',
+      tokens['response-time'](req, res), 'ms',
+      tokens.postType(req, res)
+    ].join(' ')
+  })
+
+app.use(morganConfig)
+
+let persons = [
      {
          "name": "Dogu",
          "number": "1234",
@@ -44,21 +70,22 @@ app.delete("/api/persons/:id", (req, res) => {
 })
 
 app.post("/api/persons", (req, res) => {
-    const personBody = req.body
+    const personBody = JSON.parse(JSON.stringify(req.body))
+    console.log(personBody)
     const personCand = persons.find(person => person.name === personBody.name)
     if(personBody.name === ""){
         res.status(404).json({
-            "error": "name must be filled"
+            error: "name must be filled"
         })
     }
     else if(personBody.number === ""){
         res.status(404).json({
-            "error": "number must be filled"
+            error: "number must be filled"
         })
     }
     else if(personCand){
         res.status(404).json({
-            "error": "name must be unique"
+            error: "name must be unique"
         })
     }
     else{
@@ -70,6 +97,11 @@ app.post("/api/persons", (req, res) => {
     }
     
 })
+
+const unknownendpoint = (req, res) => {
+    res.status(404).send({error: "unknown endpoint"})
+}
+app.use(unknownendpoint)
 
 const PORT = 3001
 app.listen(PORT, () => {
