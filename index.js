@@ -96,9 +96,16 @@ app.post("/api/persons", (req, res) => {
         personBody.id = personId
 
         persons = persons.concat(personBody)
-        res.end()
-    }
-    
+        res.send(personBody)
+    } 
+})
+
+app.put("/api/persons/:id", (req, res) => {
+    const personBody = req.body
+    personBody.id = Number(req.params.id)
+    person = persons.filter(person => person.name === personBody.name ? person.number = personBody.number : person)
+    console.log(personBody)
+    res.send(personBody)
 })
 
 const unknownendpoint = (req, res) => {
