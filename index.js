@@ -68,29 +68,18 @@ app.delete('/api/persons/:id', (req, res, next) => {
     }).catch( error => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const personBody = JSON.parse(JSON.stringify(req.body))
     console.log(personBody)
 
-    if(personBody.name === ''){
-        res.status(404).json({
-            error: 'name must be filled'
-        })
-    }
-    else if(personBody.number === ''){
-        res.status(404).json({
-            error: 'number must be filled'
-        })
-    }
-    else{
-        const person = new Person({
-            name: personBody.name,
-            number: personBody.number
-        })
-        person.save().then( savedPerson => {
-            res.send(savedPerson)
-        })
-    }
+    const person = new Person({
+        name: personBody.name,
+        number: personBody.number
+    })
+    person.save().then( savedPerson => {
+        res.send(savedPerson)
+    }).catch(error => next(error))
+
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -112,6 +101,8 @@ const errorHandler = (error, request, response, next) => {
     console.error(error.message)
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
+    } else if(error.name === 'ValidationError') {
+        return response.status(400).send({ error: error.message })
     }
     next(error)
 }
