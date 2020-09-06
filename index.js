@@ -78,8 +78,9 @@ app.post('/api/persons', (req, res, next) => {
     })
     person.save().then( savedPerson => {
         res.send(savedPerson)
-    }).catch(error => next(error))
-
+    }).catch(error => {
+        next(error)
+    })
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -87,9 +88,11 @@ app.put('/api/persons/:id', (req, res, next) => {
         name: req.body.name,
         number: req.body.number
     }
-    Person.findByIdAndUpdate(req.params.id, editedPerson, { new: true }).then(result => {
+    Person.findByIdAndUpdate(req.params.id, editedPerson, { new: true, runValidators: true, context: 'query' }).then(result => {
         res.json(result)
-    }).catch( error => next(error))
+    }).catch( error =>
+        next(error)
+    )
 })
 
 const unknownendpoint = (req, res) => {
